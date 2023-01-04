@@ -43,7 +43,7 @@
 
           <el-menu-item
             index="3"
-            @click="goto(3)"
+            @click="goto('experiment')"
           >
             <div class="item-content">
               <div class="circle">
