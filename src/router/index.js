@@ -13,44 +13,58 @@ const routes = [{
         path: '/datasets',
         name: 'Data',
         component: () =>
-            import ('../views/Datasets.vue')
+            import ('../views/Datasets/Datasets.vue')
     },
     {
-        path: '/datadetails',
+        path: '/datadetails/:id',
         name: 'DataDetails',
         component: () =>
-            import ('../views/DataDetails.vue')
+            import ('../views/Datasets/DataDetails.vue')
+    },
+    {
+        path: '/new_datasets',
+        name: 'NewData',
+        component: () =>
+            import ('../views/Datasets/NewData.vue')
     },
     {
         path: '/model',
         name: 'Model',
         component: () =>
-            import ('../views/Model.vue')
+            import ('../views/ModelPage/Model.vue')
     },
     {
         path: '/modeldetails',
         name: 'ModelDetails',
         component: () =>
-            import ('../views/ModelDetails.vue')
+            import ('../views/ModelPage/ModelDetails.vue')
     },
     {
         path: '/experiment',
         name: 'Experiment',
         component: () =>
-            import ('../views/Experiment.vue')
+            import ('../views/Experiment/Experiment.vue')
     },
     {
         path: '/new_experiment',
         name: 'NewExperiment',
         component: () =>
-            import ('../views/NewExperiment.vue')
+            import ('../views/Experiment/NewExperiment.vue')
     },
 ]
 
 const router = new VueRouter({
     mode: 'history',
     base: process.env.BASE_URL,
-    routes
+    routes,
+    scrollBehavior(to, from, savedPosition) {
+        if (savedPosition) {
+          return savedPosition
+        } else {
+          return { x: 0, y: 0 }
+        }
+      }
+    
 })
 
 export default router

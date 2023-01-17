@@ -1,7 +1,7 @@
 <template>
   <div id="app">
-    <Menu active-name="1"></Menu>
-    <div style="margin-left:140px">
+    <Header active-name="1"></Header>
+    <div style="margin-top:52px">
       <router-view />
     </div>
 
@@ -9,12 +9,12 @@
 </template>
 
 <script>
-import Menu from './components/Menu.vue'
+import Header from './components/Header.vue'
 
 export default {
   name: 'App',
   components: {
-    Menu
+    Header
   }
 }
 </script>

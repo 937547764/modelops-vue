@@ -2,7 +2,7 @@
   <div class="container">
     <div class="search-box">
       <el-input
-        placeholder="搜索数据集"
+        placeholder="搜索模型"
         v-model="input"
       >
         <el-button
@@ -19,62 +19,64 @@
 
       <el-tabs v-model="activeName">
         <el-tab-pane
-          label="数据集详情"
+          label="模型详情"
           name="first"
         >
-          <el-input
-            type="textarea"
-            :autosize="{ minRows: 2}"
-            placeholder="请输入介绍"
-            v-model="textarea"
+
+          <div class="code">
+
+            <el-button plain>下载</el-button>
+            <el-button plain>克隆</el-button>
+
+            <el-descriptions
+              direction="vertical"
+              :column="1"
+              border
+            >
+              <el-descriptions-item label="代码">main.py</el-descriptions-item>
+            </el-descriptions>
+          </div>
+
+          <el-table
+            border
+            :data="tableData"
+            style="width: 200px;float:left"
+            :header-cell-style="{background:'#fafafa'}"
           >
-          </el-input>
+            <el-table-column
+              prop="data"
+              label="模型依赖"
+            >
+            </el-table-column>
+
+          </el-table>
 
           <el-card shadow="never">
-            <span>cord-19.csv</span>
-            <el-button
-              type="text"
-              icon="el-icon-download"
-            ></el-button>
+            <p>模型参数</p>
 
-            <template>
-              <el-table
-                border
-                style="width: 100%"
+            <el-table
+              border
+              style="width: 100%"
+            >
+              <el-table-column
+                label="名称"
+                width="100"
               >
-                <el-table-column
-                  label="索引"
-                  width="100"
-                >
-                </el-table-column>
-                <el-table-column label="列名">
-                </el-table-column>
-                <el-table-column
-                  label="类型"
-                  width="180"
-                >
-                </el-table-column>
-                <el-table-column
-                  label="缺失值"
-                  width="180"
-                >
-                </el-table-column>
-                <el-table-column
-                  label="最大值"
-                  width="120"
-                >
-                </el-table-column>
-                <el-table-column
-                  label="最小值"
-                  width="120"
-                >
-                </el-table-column>
-              </el-table>
-            </template>
-          </el-card>
+              </el-table-column>
+              <el-table-column label="描述">
+              </el-table-column>
+              <el-table-column
+                label="类型"
+                width="180"
+              >
+              </el-table-column>
+              <el-table-column
+                label="默认值"
+                width="180"
+              >
+              </el-table-column>
 
-          <el-card shadow="never">
-            在线编程
+            </el-table>
           </el-card>
 
         </el-tab-pane>
@@ -117,7 +119,7 @@
             </el-table-column>
             <el-table-column
               prop="address"
-              label="实验"
+              label="数据集"
             >
             </el-table-column>
           </el-table>
@@ -126,8 +128,8 @@
       </el-tabs>
 
     </div>
-
   </div>
+
 </template>
 
 <script>
@@ -139,10 +141,15 @@ export default {
 
   data() {
     return {
-      title: 'CORD-19',
-      info: 'CORD-19 is a free resource of tens of thousands of scholarly articles about COVID-19, SARS-CoV-2, and related coronaviruses for use by the global research community.',
+      input: '',
+
+      title: 'mlr.classif.xgboost',
+      info: 'Description of mlr.classif.xgboost',
       activeName: 'first',
-      textarea: ''
+      textarea: '',
+      tableData: [{ data: "xgboost   0.6.4" },
+      { data: "OpenML  1.3" },
+      { data: "mlr  2.11" }]
 
     }
   },
@@ -163,7 +170,7 @@ export default {
 
 <style  scoped>
 .container {
-  padding: 40px 80px;
+  padding: 40px 180px;
 }
 .search-box {
   width: 500px;
@@ -182,7 +189,6 @@ export default {
 
 .info {
   margin-top: 9px;
-  margin-right: 200px;
   line-height: 24px;
   font-size: 15px;
   color: #555;
@@ -192,13 +198,37 @@ export default {
   text-align: justify;
 }
 
+.num {
+  font-weight: bold;
+  margin-top: 9px;
+  line-height: 20px;
+  font-size: 14px;
+  color: #777;
+}
+
+a {
+  text-decoration: inherit;
+}
+
 .tabs {
   margin-top: 30px;
-  margin-right: 200px;
 }
 
 .el-card {
   margin-top: 20px;
   border: 1px solid #c0c4cc;
+  margin-left: 250px;
+}
+
+.code {
+  margin-top: 20px;
+}
+
+.el-descriptions {
+  margin-top: 20px;
+}
+
+.el-table {
+  margin-top: 20px;
 }
 </style>

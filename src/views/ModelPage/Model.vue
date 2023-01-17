@@ -82,7 +82,7 @@ export default {
 
 <style  scoped>
 .container {
-  padding: 40px 80px;
+  padding: 40px 180px;
 }
 .search-box {
   width: 500px;
