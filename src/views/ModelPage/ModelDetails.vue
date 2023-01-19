@@ -1,19 +1,8 @@
 <template>
   <div class="container">
-    <div class="search-box">
-      <el-input
-        placeholder="搜索模型"
-        v-model="input"
-      >
-        <el-button
-          slot="append"
-          icon="el-icon-search"
-        ></el-button>
-      </el-input>
-    </div>
 
-    <div class="title">{{title}}</div>
-    <div class="info">{{info}}</div>
+    <div class="title">{{model.model_name}}</div>
+    <div class="info">{{model.short_description}}</div>
 
     <div class="tabs">
 
@@ -23,67 +12,164 @@
           name="first"
         >
 
-          <div class="code">
+          <mavon-editor
+            class='md'
+            v-model="model.long_description"
+            defaultOpen="preview"
+            :subfield="false"
+            :editable="false"
+            :toolbarsFlag="false"
+            :shortCut="false"
+            :boxShadow="false"
+          />
 
-            <el-button plain>下载</el-button>
-            <el-button plain>克隆</el-button>
-
-            <el-descriptions
-              direction="vertical"
-              :column="1"
-              border
-            >
-              <el-descriptions-item label="代码">main.py</el-descriptions-item>
-            </el-descriptions>
-          </div>
-
-          <el-table
-            border
-            :data="tableData"
-            style="width: 200px;float:left"
-            :header-cell-style="{background:'#fafafa'}"
-          >
-            <el-table-column
-              prop="data"
-              label="模型依赖"
-            >
-            </el-table-column>
-
-          </el-table>
-
-          <el-card shadow="never">
-            <p>模型参数</p>
-
-            <el-table
-              border
-              style="width: 100%"
-            >
-              <el-table-column
-                label="名称"
-                width="100"
+          <el-row :gutter="25">
+            <el-col :span="10">
+              <p>模型依赖</p>
+              <el-descriptions
+                :column="2"
+                border
               >
-              </el-table-column>
-              <el-table-column label="描述">
-              </el-table-column>
-              <el-table-column
-                label="类型"
-                width="180"
-              >
-              </el-table-column>
-              <el-table-column
-                label="默认值"
-                width="180"
-              >
-              </el-table-column>
+                <template v-for="(value,key) in model.dependency">
+                  <el-descriptions-item :label="key">{{value}}</el-descriptions-item>
+                </template>
+              </el-descriptions>
+            </el-col>
 
-            </el-table>
-          </el-card>
+            <el-col :span="14">
+              <div>
+                <p>模型参数</p>
+
+                <el-table
+                  border
+                  :header-cell-style="{background:'#fafafa'}"
+                  :data="Object.entries(model.parameter)"
+                  max-height="300"
+                >
+                  <el-table-column label="名称">
+                    <template slot-scope="scope">
+                      <span> {{ scope.row[0] }}</span>
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="默认值">
+                    <template slot-scope="scope">
+                      <span> {{ scope.row[1] }}</span>
+                    </template>
+                  </el-table-column>
+
+                </el-table>
+              </div>
+            </el-col>
+          </el-row>
 
         </el-tab-pane>
 
         <el-tab-pane
-          label="实验"
+          label="模型文件"
           name="second"
+        >
+          <div class="code">
+
+            <div class="file_action">
+              <el-select
+                v-model="model.currrent_branch"
+                placeholder="请选择分支"
+                size="small"
+                style="width:120px"
+                @change="change_branch"
+              >
+                <el-option
+                  v-for="item in model.branch_list"
+                  :key="item"
+                  :label="item"
+                  :value="item"
+                >
+                </el-option>
+              </el-select>
+              <div style=" float:right">
+                <el-button
+                  type="primary"
+                  v-if="this.reading"
+                  style="margin-right:15px;"
+                  size="medium"
+                  @click="reading = false"
+                >返回</el-button>
+
+                <el-button
+                  v-else
+                  style="margin-right:15px;"
+                  type="success"
+                  icon="el-icon-download"
+                  size="medium"
+                  plain
+                  @click="download"
+                >下载</el-button>
+                <el-popover
+                  trigger="click"
+                  placement="bottom-end"
+                >
+                  <el-input
+                    :value=model.clone_path
+                    disabled
+                    style="width: 340px"
+                  >
+                    <el-button
+                      slot="append"
+                      v-clipboard:copy=model.clone_path
+                      v-clipboard:success="firstCopySuccess"
+                      v-clipboard:error="firstCopyError"
+                    >复制
+                    </el-button>
+                  </el-input>
+                  <el-button
+                    type="primary"
+                    plain
+                    size="medium"
+                    slot="reference"
+                  >克隆</el-button>
+
+                </el-popover>
+              </div>
+            </div>
+
+            <div
+              class="file_holder"
+              v-if="this.reading"
+            >
+              <div class='file_title'> <i class="el-icon-tickets"></i> {{ this.file_name}}</div>
+
+              <div
+                v-html="this.file_content"
+                style="padding-left: 15px;"
+              ></div>
+
+            </div>
+
+            <el-table
+              v-else
+              border
+              :data="model.file_list"
+              :header-cell-style="{
+              background:'#fafafa',
+              padding: '10px'}"
+            >
+              <el-table-column label="文件列表">
+                <template slot-scope="scope">
+                  <span
+                    class="file-name"
+                    @click="read_file(scope.row)"
+                  > <i class="el-icon-tickets"></i> {{ scope.row }}</span>
+                </template>
+              </el-table-column>
+
+            </el-table>
+
+          </div>
+        </el-tab-pane>
+
+        <el-tab-pane
+          label="实验"
+          name="third"
         >
 
           <el-table
@@ -133,29 +219,49 @@
 </template>
 
 <script>
+import { mavonEditor } from "mavon-editor";
+import "mavon-editor/dist/css/index.css";
+
+
 export default {
 
   components: {
-
+    mavonEditor,
   },
 
   data() {
     return {
       input: '',
-
-      title: 'mlr.classif.xgboost',
-      info: 'Description of mlr.classif.xgboost',
+      id: undefined,
+      reading: false,
+      model: {
+        "id": 1,
+        "owner": "",
+        "model_name": "",
+        "short_description": "",
+        "long_description": "## 模型描述",
+        "created": "",
+        "task": "",
+        "currrent_branch": "dev",
+        "branch_list": [],
+        "file_list": [],
+        "clone_path": "",
+        "dependency": {},
+        "parameter": {}
+      },
+      file_content: '',
+      file_name: '',
+      params: [],
       activeName: 'first',
       textarea: '',
-      tableData: [{ data: "xgboost   0.6.4" },
-      { data: "OpenML  1.3" },
-      { data: "mlr  2.11" }]
 
     }
   },
 
   created() {
-
+    const id = this.$route.params.id
+    this.id = id
+    this.get_model(id)
   },
 
 
@@ -163,18 +269,73 @@ export default {
   },
 
   methods: {
-  }
+    get_model(id) {
+      this.$http({
+        url: "/modelrepos/" + id + '/',
+        method: "get",
+      }).then((res) => {
+        let data = res.data
+        this.model = data
 
+      })
+    },
+
+    get_file(name) {
+      this.$http({
+        url: "/modelrepos/" + this.id + '/file/',
+        method: "get",
+        params: {
+          file_name: name
+        }
+      }).then((res) => {
+        this.file_content = res.data
+      })
+    },
+
+    read_file(arg) {
+      let name = arg
+      this.get_file(name)
+      this.reading = true
+      this.file_name = name
+    },
+
+    download() {
+      window.open("/api/modelrepos/" + this.id + '/download/')
+    },
+
+    firstCopySuccess(e) {
+      console.log("copy arguments e:", e);
+      this.$message({
+        message: '复制成功！',
+        type: 'success'
+      });
+    },
+    firstCopyError(e) {
+      console.log("copy arguments e:", e);
+      this.$message.error('复制失败');
+    },
+
+    change_branch() {
+      console.log('11')
+      this.$http({
+        url: "/modelrepos/check_out/",
+        method: "get",
+        params: {
+          model_id: this.id,
+          branch_name: this.model.currrent_branch
+        }
+      }).then((res) => {
+        this.get_model(this.id)
+      })
+    }
+
+  }
 }
 </script>
 
 <style  scoped>
 .container {
   padding: 40px 180px;
-}
-.search-box {
-  width: 500px;
-  margin-bottom: 40px;
 }
 
 .title {
@@ -206,29 +367,44 @@ export default {
   color: #777;
 }
 
-a {
-  text-decoration: inherit;
-}
-
 .tabs {
   margin-top: 30px;
 }
-
 .el-card {
   margin-top: 20px;
   border: 1px solid #c0c4cc;
   margin-left: 250px;
 }
 
-.code {
-  margin-top: 20px;
+.code >>> .el-table__cell {
+  padding: 5px 0px;
 }
 
-.el-descriptions {
-  margin-top: 20px;
+.v-note-wrapper {
+  z-index: 1 !important;
+  min-height: 100px;
+}
+.file-name {
+  cursor: pointer;
+  color: #1283ba;
+  font-family: "Segoe UI";
 }
 
-.el-table {
-  margin-top: 20px;
+.file_action {
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.file_title {
+  color: #333;
+  font-size: 15px;
+  line-height: 27px;
+  padding: 7px 10px 5px 20px;
+  background: #fcfcfc;
+  border-bottom: 1px solid #dce3e8;
+}
+
+.md {
+  margin: 10px 0 25px 0;
 }
 </style>

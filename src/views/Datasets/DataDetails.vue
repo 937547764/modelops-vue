@@ -2,6 +2,14 @@
   <div class="container">
 
     <div class="title">{{detail.name}}</div>
+    <el-tag
+      size="small"
+      type="success"
+    >{{detail.task }}</el-tag>
+    <el-tag
+      type="warning"
+      size="small"
+    >{{detail.area}}</el-tag>
     <div class="info">{{detail.short_description}}</div>
 
     <div class="tabs">
@@ -166,10 +174,6 @@ export default {
 .container {
   padding: 40px 180px;
 }
-.search-box {
-  width: 500px;
-  margin-bottom: 40px;
-}
 
 .title {
   cursor: pointer;
@@ -214,10 +218,15 @@ export default {
   font-weight: bold;
   color: #555;
 }
+
+.el-tag {
+  margin-right: 10px;
+  margin-top: 8px;
+}
 </style>
 
 <style>
-.md .v-show-content {
+/* .md .v-show-content {
   background-color: #fff !important;
-}
+} */
 </style>

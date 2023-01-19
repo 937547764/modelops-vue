@@ -4,27 +4,61 @@
       <el-input
         placeholder="搜索模型"
         v-model="input"
+        style="width: 500px;"
       >
         <el-button
           slot="append"
           icon="el-icon-search"
+          @click="search"
         ></el-button>
       </el-input>
+
+      <el-select
+        v-model="task_selected"
+        clearable
+        placeholder="按任务类型筛选"
+        @change="filter"
+        style=" margin-left:20px"
+      >
+        <el-option
+          v-for="(item, i) in task_list"
+          :label="item"
+          :key="i"
+          :value="item"
+        >
+        </el-option>
+      </el-select>
+      <el-button
+        type="text"
+        @click="clear_filter"
+        style=" margin-left:10px"
+      >取消筛选</el-button>
     </div>
-    <p style=" ">共找到1234个模型</p>
+
+    <p>共找到 {{count}} 个模型</p>
 
     <div
       class="card"
       v-for="(item,index) in resultList "
       :key="index"
     >
-      <router-link to="/modeldetails">
-        <div class="title">{{item.title}}</div>
-      </router-link>
-      <div class="info">{{item.info}}</div>
-      <div class="num">{{item.num}}次实验 <span style="padding-left:20px"></span>
-        <i class="el-icon-time"></i>
-        {{item.date}} by {{item.user}}
+      <div
+        style="cursor: pointer"
+        @click="toModel(item)"
+      >
+        <div class="title">{{item.model_name}}
+        </div>
+
+        <div class="info">{{item.short_description}}</div>
+        <div class="num">
+          <el-tag
+            size="small"
+            type="success"
+            style="margin-right:15px"
+          >{{item.task }}</el-tag>
+          <i class="el-icon-time"></i>
+          {{item.created.substr(0,10)}} by {{item.owner}}
+        </div>
       </div>
       <el-divider></el-divider>
     </div>
@@ -42,31 +76,16 @@ export default {
   data() {
     return {
       input: '',
-      resultList: [
-        {
-          title: 'mlr.classif.xgboost',
-          info: 'Description of mlr.classif.xgboost',
-          num: 32,
-          date: '2021-06-21 23:58:07',
-          user: 'Zhang San'
-        }, {
-          title: 'mlr.classif.xgboost',
-          info: 'Description of mlr.classif.xgboost',
-          num: 32,
-          date: '2021-06-21 23:58:07',
-          user: 'Zhang San'
-        }, {
-          title: 'mlr.classif.xgboost',
-          info: 'Description of mlr.classif.xgboost',
-          num: 32,
-          date: '2021-06-21 23:58:07',
-          user: 'Zhang San'
-        },]
-
+      search_word: '',
+      resultList: undefined,
+      count: undefined,
+      task_list: ['命名实体识别', '关系抽取', '实体关系联合抽取'],
+      task_selected: '',
     }
   },
 
   created() {
+    this.get_modelList()
 
   },
 
@@ -75,6 +94,45 @@ export default {
   },
 
   methods: {
+    get_modelList(page = 1) {
+      this.$http({
+        url: "/modelrepos/",
+        method: "get",
+        params: {
+          page: page,
+          task: this.task_selected,
+          name: this.search_word
+        }
+      }).then((res) => {
+        //console.log(res);
+        let data = res.data
+        this.count = data.count
+        this.resultList = data.results
+      })
+    },
+
+    filter() {
+      this.get_modelList()
+    },
+
+    clear_filter() {
+      this.task_selected = ''
+      this.get_modelList()
+    },
+
+    search() {
+      this.search_word = this.input.trim()
+      this.get_modelList()
+    },
+
+    toModel(arg) {
+      this.$router.push({
+        name: "ModelDetails",
+        params: {
+          id: arg.id,
+        },
+      });
+    },
   }
 
 }
@@ -85,8 +143,7 @@ export default {
   padding: 40px 180px;
 }
 .search-box {
-  width: 500px;
-  margin-bottom: 40px;
+  margin-bottom: 30px;
 }
 .card {
   margin-right: 200px;
@@ -118,9 +175,5 @@ export default {
   line-height: 20px;
   font-size: 14px;
   color: #777;
-}
-
-a {
-  text-decoration: inherit;
 }
 </style>

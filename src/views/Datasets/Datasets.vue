@@ -8,6 +8,7 @@
         <el-button
           slot="append"
           icon="el-icon-search"
+          @click="search"
         ></el-button>
       </el-input>
     </div>
@@ -117,6 +118,7 @@ export default {
   data() {
     return {
       input: '',
+      search_word: '',
       count: undefined,
       resultList: undefined,
       clusterFields: {
@@ -131,23 +133,29 @@ export default {
   },
 
   created() {
-
+    this.get_datasets_list()
   },
 
 
   mounted() {
-    this.get_datasets_list(1)
+
   },
 
   methods: {
-    get_datasets_list(page, area, task) {
+    search() {
+      this.search_word = this.input.trim()
+      this.get_datasets_list()
+    },
+
+    get_datasets_list(page = 1) {
       this.$http({
         url: "/datasets/",
         method: "get",
         params: {
           page: page,
-          area: area,
-          task: task
+          area: this.clusterFields.checkList,
+          task: this.clusterTasks.checkList,
+          name: this.search_word
         }
       }).then((res) => {
         //console.log(res);
@@ -159,7 +167,7 @@ export default {
 
     checkRadio(val, cluster) {
       val == cluster.checkList ? cluster.checkList = '' : cluster.checkList = val
-      this.get_datasets_list(1, this.clusterFields.checkList, this.clusterTasks.checkList)
+      this.get_datasets_list()
     },
 
     toDataset(arg) {
@@ -223,7 +231,7 @@ export default {
 }
 
 .el-card {
-  border: 1px solid #999;
+  border: 1px solid #e0e0e0;
 }
 
 .filter {
@@ -234,9 +242,6 @@ export default {
   margin-right: 0px;
 }
 
-a {
-  text-decoration: none;
-}
 .el-tag {
   margin-right: 10px;
   margin-top: 8px;
@@ -244,11 +249,5 @@ a {
 
 .limit >>> .el-card__body {
   padding: 5px;
-}
-</style>
-
-<style>
-.limit .el-radio__input {
-  display: none;
 }
 </style>

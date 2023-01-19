@@ -34,7 +34,7 @@ const routes = [{
             import ('../views/ModelPage/Model.vue')
     },
     {
-        path: '/modeldetails',
+        path: '/modeldetails/:id',
         name: 'ModelDetails',
         component: () =>
             import ('../views/ModelPage/ModelDetails.vue')

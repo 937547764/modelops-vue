@@ -18,7 +18,7 @@
           数据集
         </router-link>
         <router-link
-          to='model'
+          to='/model'
           class="menu-item"
         >
           <svg
@@ -30,7 +30,7 @@
           模型
         </router-link>
         <router-link
-          to='experiment'
+          to='/experiment'
           class="menu-item"
         >
           <svg
