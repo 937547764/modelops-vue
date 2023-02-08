@@ -1,7 +1,48 @@
 <template>
   <div class="container">
-    <el-row :gutter="60">
-      <el-col :span="13">
+    <el-row :gutter="20">
+      <el-col :span="8">
+        <el-card
+          class="new-card"
+          shadow="never"
+        >
+          <div
+            slot="header"
+            class="clearfix"
+          >
+            <span>选择数据集</span>
+          </div>
+          <div class="card-item">
+            <div class="search-box">
+              <el-input
+                placeholder="搜索数据集"
+                v-model="input[0]"
+              >
+                <el-button
+                  slot="append"
+                  icon="el-icon-search"
+                  @click="search_data"
+                ></el-button>
+              </el-input>
+            </div>
+            <el-card
+              shadow="never"
+              class="my"
+              v-for="(item,index) in data_list "
+              :key="index"
+              @dblclick.native="data_selected = item"
+            >
+              <div
+                class="title"
+                @click="toDataset(item.id)"
+              >{{item.name}}</div>
+              <div class="info">{{item.short_description}}</div>
+            </el-card>
+
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="8">
         <el-card
           class="new-card"
           shadow="never"
@@ -17,16 +58,33 @@
             >运行</el-button>
           </div>
           <div class="card-item">
-            <h3>数据</h3>
+            <p>数据</p>
+            <el-card
+              shadow="never"
+              class="my"
+              v-if="data_selected"
+            >
+              <div class="title">{{data_selected.name}}</div>
+              <div class="info">{{data_selected.short_description}}</div>
+            </el-card>
             <el-divider></el-divider>
-            <div class="model">
-              <h3>模型</h3>
-            </div>
+            <div>
+              <p>模型</p>
+              <el-card
+                shadow="never"
+                class="my"
+                v-if="model_selected"
+              >
+                <div class="title">{{model_selected.model_name}}</div>
 
+              </el-card>
+            </div>
           </div>
+
         </el-card>
       </el-col>
-      <el-col :span="10">
+      <el-col :span="8">
+
         <el-card
           class="new-card"
           shadow="never"
@@ -41,51 +99,68 @@
             <div class="search-box">
               <el-input
                 placeholder="搜索模型"
-                v-model="input"
+                v-model="input[1]"
               >
                 <el-button
                   slot="append"
                   icon="el-icon-search"
+                  @click="search_model"
                 ></el-button>
               </el-input>
             </div>
 
-            <p class='text'>我的模型</p>
+            <el-card
+              shadow="never"
+              class="my"
+              v-for="(item,index) in model_list "
+              :key="index"
+              @dblclick.native="model_selected = item"
+            >
+              <div
+                class="title"
+                @click="toModel(item.id)"
+              >{{item.model_name}}</div>
+              <div class="info">{{item.short_description}}</div>
+            </el-card>
+
+            <p class='text'>模型推荐</p>
             <el-card
               shadow="never"
               class="my"
             >
-              <div class="title">{{title}}</div>
+              <div
+                class="title"
+                @click="toModel(1)"
+              >{{title}}</div>
               <div class="info">{{info}}</div>
             </el-card>
-
-            <el-card
-              shadow="never"
-              class="my"
-            >
-              <div class="title">{{title}}</div>
-              <div class="info">{{info}}</div>
-            </el-card>
-
           </div>
         </el-card>
+
       </el-col>
     </el-row>
   </div>
 </template>
 
 <script>
+//import draggable from 'vuedraggable'
 export default {
 
   components: {
+    // draggable
 
   },
 
   data() {
     return {
-      title: 'mlr.classif.xgboost',
-      info: 'Description of mlr.classif.xgboost',
-
+      input: ['', ''],
+      search_word: ['', ''],
+      data_selected: undefined,
+      model_selected: undefined,
+      model_list: [],
+      data_list: [],
+      title: 'bert-softmax',
+      info: '经典的bert-softmax模型用于命名实体识别',
     }
   },
 
@@ -98,6 +173,63 @@ export default {
   },
 
   methods: {
+    get_modelList(page = 1) {
+      this.$http({
+        url: "/modelrepos/",
+        method: "get",
+        params: {
+          page: page,
+          name: this.search_word[1]
+        }
+      }).then((res) => {
+        //console.log(res);
+        let data = res.data
+        this.model_list = data.results
+      })
+    },
+
+    get_dataList(page = 1) {
+      this.$http({
+        url: "/datasets/",
+        method: "get",
+        params: {
+          page: page,
+          name: this.search_word[0]
+        }
+      }).then((res) => {
+        let data = res.data
+        this.data_list = data.results
+      })
+    },
+    search_model() {
+      this.search_word[1] = this.input[1].trim()
+      this.get_modelList()
+    },
+
+    search_data() {
+      this.search_word[0] = this.input[0].trim()
+      this.get_dataList()
+    },
+
+    toModel(id) {
+      const { href } = this.$router.resolve({
+        name: "ModelDetails",
+        params: {
+          id: id,
+        },
+      });
+      window.open(href, '_blank')
+    },
+
+    toDataset(id) {
+      const { href } = this.$router.resolve({
+        name: "DataDetails",
+        params: {
+          id: id,
+        },
+      });
+      window.open(href, '_blank')
+    },
   }
 
 }
@@ -105,7 +237,7 @@ export default {
 
 <style  scoped>
 .container {
-  padding: 30px 80px;
+  padding: 18px 80px;
 }
 
 .new-card >>> .el-card__header {
@@ -119,6 +251,7 @@ export default {
 
 .new-card.el-card {
   min-height: 80vh;
+  max-height: 80vh;
 }
 
 .text {
@@ -130,6 +263,7 @@ export default {
 .el-card {
   border: 1px solid #c0c4cc;
   margin-top: 20px;
+  overflow-y: auto;
 }
 
 .title {
@@ -159,8 +293,11 @@ export default {
 
 .model {
   vertical-align: middle;
-  height: 60vh;
   display: table-cell;
+}
+
+p {
+  margin: 0;
 }
 </style>
 

@@ -171,44 +171,10 @@
           label="实验"
           name="third"
         >
-
-          <el-table
-            tooltip-effect="dark"
-            style="width: 100%"
-          >
-            <el-table-column
-              type="selection"
-              width="55"
-            >
-            </el-table-column>
-            <el-table-column
-              label="开始时间"
-              width="120"
-            >
-              <template slot-scope="scope">{{ scope.row.date }}</template>
-            </el-table-column>
-            <el-table-column
-              prop="name"
-              label="状态"
-              width="120"
-            >
-            </el-table-column>
-            <el-table-column
-              prop="address"
-              label="名称"
-            >
-            </el-table-column>
-            <el-table-column
-              prop="address"
-              label="用户"
-            >
-            </el-table-column>
-            <el-table-column
-              prop="address"
-              label="数据集"
-            >
-            </el-table-column>
-          </el-table>
+          <div v-if="exp_count==0"> 暂无相关实验 </div>
+          <div v-else>
+            <exptable :resultList="exp_list"></exptable>
+          </div>
 
         </el-tab-pane>
       </el-tabs>
@@ -221,12 +187,14 @@
 <script>
 import { mavonEditor } from "mavon-editor";
 import "mavon-editor/dist/css/index.css";
+import exptable from '../../components/ExpTable.vue'
 
 
 export default {
 
   components: {
     mavonEditor,
+    exptable
   },
 
   data() {
@@ -254,7 +222,8 @@ export default {
       params: [],
       activeName: 'first',
       textarea: '',
-
+      exp_count: 0,
+      exp_list: [],
     }
   },
 
@@ -276,7 +245,19 @@ export default {
       }).then((res) => {
         let data = res.data
         this.model = data
+      })
 
+      this.$http({
+        url: "/modelrepos/" + id + '/experiments/',
+        method: "get",
+      }).then((res) => {
+        let data = res.data
+        data.results.map(item => {
+          item.model_config = '';
+          item.metric = '';
+        });
+        this.exp_count = data.count
+        this.exp_list = data.results
       })
     },
 
