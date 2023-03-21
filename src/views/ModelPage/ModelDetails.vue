@@ -297,7 +297,6 @@ export default {
     },
 
     change_branch() {
-      console.log('11')
       this.$http({
         url: "/modelrepos/check_out/",
         method: "get",

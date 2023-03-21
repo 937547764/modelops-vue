@@ -41,7 +41,10 @@
           </svg>
           实验
         </router-link>
-        <span class="menu-item">
+        <span
+          class="menu-item"
+          @click="monitor"
+        >
           <svg
             class="icon"
             aria-hidden="true"
@@ -85,6 +88,16 @@ export default {
   {
     goto(index) {
       this.$router.push(index)
+    },
+
+    monitor() {
+      this.$http({
+        url: "/experiments/monitor/",
+        method: "get",
+      }).then((res) => {
+        let url = res.data.url
+        window.open(url, '_blank')
+      })
     }
   },
 

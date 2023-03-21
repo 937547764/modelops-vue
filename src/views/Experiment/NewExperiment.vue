@@ -30,12 +30,15 @@
               class="my"
               v-for="(item,index) in data_list "
               :key="index"
-              @dblclick.native="data_selected = item"
             >
-              <div
+              <span
                 class="title"
                 @click="toDataset(item.id)"
-              >{{item.name}}</div>
+              >{{item.name}}</span>
+              <span
+                class="choose"
+                @click="data_selected = item"
+              >选择</span>
               <div class="info">{{item.short_description}}</div>
             </el-card>
 
@@ -55,10 +58,11 @@
             <el-button
               style="float: right; padding:5px 10px;color:#000"
               plain
+              @click="create_exp"
             >运行</el-button>
           </div>
           <div class="card-item">
-            <p>数据</p>
+            <p class="text">数据</p>
             <el-card
               shadow="never"
               class="my"
@@ -69,15 +73,59 @@
             </el-card>
             <el-divider></el-divider>
             <div>
-              <p>模型</p>
-              <el-card
-                shadow="never"
-                class="my"
-                v-if="model_selected"
-              >
-                <div class="title">{{model_selected.model_name}}</div>
+              <p class="text">模型</p>
+              <div v-if="model_selected">
+                <el-card
+                  shadow="never"
+                  class="my"
+                >
+                  <div class="title">{{model_selected.model_name}}
+                  </div>
+                  <div class="info">{{model_selected.short_description}}</div>
 
-              </el-card>
+                </el-card>
+                <p class="text">实验参数</p>
+                <el-card
+                  shadow="never"
+                  class="my"
+                >
+                  <el-form
+                    class="form"
+                    v-for="(value,key) in model.parameter"
+                    :key="key"
+                    label-width="180px"
+                    :model=model.parameter
+                  >
+                    <el-form-item :label="key">
+                      <el-input v-model=" model.parameter[key]"></el-input>
+                    </el-form-item>
+                  </el-form>
+                </el-card>
+                <p class="text">选择分支</p>
+                <el-select
+                  v-model="branch"
+                  placeholder="请选择分支"
+                  size="small"
+                  style="width:120px; margin-top:10px"
+                >
+                  <el-option
+                    v-for="item in model.branch_list"
+                    :key="item"
+                    :label="item"
+                    :value="item"
+                  >
+                  </el-option>
+                </el-select>
+                <p class="text">实验描述（选填）</p>
+                <el-input
+                  type="textarea"
+                  :autosize="{ minRows: 2}"
+                  placeholder="请输入内容"
+                  v-model="textarea"
+                  style="margin-top:10px"
+                >
+                </el-input>
+              </div>
             </div>
           </div>
 
@@ -114,25 +162,33 @@
               class="my"
               v-for="(item,index) in model_list "
               :key="index"
-              @dblclick.native="model_selected = item"
             >
-              <div
+              <span
                 class="title"
                 @click="toModel(item.id)"
-              >{{item.model_name}}</div>
+              >{{item.model_name}}</span>
+              <span
+                class="choose"
+                @click="select_model(item)"
+              >选择</span>
               <div class="info">{{item.short_description}}</div>
             </el-card>
 
-            <p class='text'>模型推荐</p>
+            <p class='c-text'>模型推荐</p>
             <el-card
               shadow="never"
               class="my"
             >
-              <div
+              <span
                 class="title"
-                @click="toModel(1)"
-              >{{title}}</div>
-              <div class="info">{{info}}</div>
+                @click="toModel(recom.id)"
+              >{{recom.model_name}}
+              </span>
+              <span
+                class="choose"
+                @click="select_model(recom)"
+              >选择</span>
+              <div class="info">{{recom.short_description}}</div>
             </el-card>
           </div>
         </el-card>
@@ -159,8 +215,14 @@ export default {
       model_selected: undefined,
       model_list: [],
       data_list: [],
-      title: 'bert-softmax',
-      info: '经典的bert-softmax模型用于命名实体识别',
+      model: undefined,
+      recom: {
+        model_name: 'bert_softmax',
+        short_description: '经典的bert+softmax模型用于命名实体识别',
+        id: 6
+      },
+      branch: '',
+      textarea: ''
     }
   },
 
@@ -182,7 +244,6 @@ export default {
           name: this.search_word[1]
         }
       }).then((res) => {
-        //console.log(res);
         let data = res.data
         this.model_list = data.results
       })
@@ -230,6 +291,47 @@ export default {
       });
       window.open(href, '_blank')
     },
+
+    select_model(item) {
+      this.model_selected = item
+      this.get_model(item.id)
+    },
+
+    get_model(id) {
+      this.$http({
+        url: "/modelrepos/" + id + '/',
+        method: "get",
+      }).then((res) => {
+        let data = res.data
+        this.model = data
+        this.branch = data.branch_list[0]
+        console.log(res);
+      })
+    },
+
+    create_exp() {
+      this.$http({
+        url: "/experiments/",
+        method: "post",
+        data: {
+          'dataset': this.data_selected.id,
+          'model': this.model_selected.id,
+          'model_config': JSON.stringify(this.model.parameter),
+          'description': this.textarea,
+          'branch': this.branch
+        }
+      }).then((res) => {
+        if (res.status == 201) {
+          this.$message({
+            message: '实验创建成功',
+            type: 'success'
+          });
+        }
+      }).catch((error) => {
+        this.$message.error('创建实验失败');
+        console.log(error)
+      })
+    }
   }
 
 }
@@ -255,6 +357,12 @@ export default {
 }
 
 .text {
+  margin-top: 20px;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.c-text {
   text-align: center;
   margin-top: 50px;
   font-weight: bold;
@@ -274,6 +382,13 @@ export default {
   text-align: LEFT;
   color: #5194e9;
   line-height: 30px;
+}
+
+.choose {
+  float: right;
+  font-size: 14px;
+  color: #5194e9;
+  cursor: pointer;
 }
 
 .info {
@@ -298,6 +413,10 @@ export default {
 
 p {
   margin: 0;
+}
+
+.form {
+  margin-top: 20px;
 }
 </style>
 

@@ -103,7 +103,10 @@
                 </el-descriptions>
               </el-col>
 
-              <el-col :span="6">
+              <el-col
+                :span="6"
+                v-if="props.row.metric"
+              >
                 <p>实验指标</p>
                 <el-descriptions
                   :column="1"

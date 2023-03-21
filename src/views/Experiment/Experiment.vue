@@ -49,7 +49,7 @@
 
     <el-button
       plain
-      disabled
+      @click="compare"
     >比较</el-button>
     <el-button
       plain
@@ -70,6 +70,7 @@
     </div>
 
     <el-table
+      ref="multipleTable"
       border
       tooltip-effect="dark"
       style="width: 100%"
@@ -172,7 +173,10 @@
                 </el-descriptions>
               </el-col>
 
-              <el-col :span="6">
+              <el-col
+                :span="6"
+                v-if="props.row.metric"
+              >
                 <p>实验指标</p>
                 <el-descriptions
                   :column="1"
@@ -286,6 +290,31 @@ export default {
       });
       window.open(href, '_blank')
     },
+
+    compare() {
+      if (this.$refs.multipleTable.selection.length < 2) {
+        this.$message({
+          message: '请选择多个实验进行比较',
+          type: 'warning'
+        });
+        return;
+      }
+      let arr = '';
+      this.$refs.multipleTable.selection.forEach(e => {
+        arr = arr + e.id + ','
+      })
+      arr = arr.substring(0, arr.length - 1);
+      this.$http({
+        url: "/experiments/compare/",
+        method: "get",
+        params: {
+          id: arr
+        }
+      }).then((res) => {
+        let url = res.data.url
+        window.open(url, '_blank')
+      })
+    }
   }
 
 }
